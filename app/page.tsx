@@ -1,85 +1,9 @@
-"use client";
+import VideoHomeClient from "@/components/VideoHomeClient";
+import { getDisplayVideos } from "@/lib/video-store";
 
-import { useState } from "react";
-import { videos, type Video } from "@/lib/videos";
-import Image from "next/image";
+export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const [selectedVideo, setSelectedVideo] = useState<Video>(videos[0]);
-
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-      {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between h-14 px-4 md:px-6 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
-        <h1 className="text-xl font-semibold tracking-tight">Video Hosting</h1>
-        <nav className="flex items-center gap-4 text-sm text-slate-400">
-          <a href="#" className="hover:text-white transition-colors">Home</a>
-          <a href="#" className="hover:text-white transition-colors">Browse</a>
-        </nav>
-      </header>
-
-      {/* Main content: player + grid */}
-      <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto">
-        {/* Main video player */}
-        <section className="mb-8">
-          <div className="aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden bg-slate-900 ring-1 ring-slate-800">
-            <video
-              key={selectedVideo.id}
-              className="w-full h-full object-contain"
-              src={selectedVideo.url}
-              controls
-              autoPlay
-              poster={selectedVideo.thumbnail}
-            />
-          </div>
-          <div className="mt-3 max-w-4xl mx-auto">
-            <h2 className="text-xl font-semibold text-white">{selectedVideo.title}</h2>
-            <p className="text-sm text-slate-400 mt-1">
-              {selectedVideo.channel} · {selectedVideo.views} views
-            </p>
-            {selectedVideo.description && (
-              <p className="text-slate-400 mt-2 text-sm">{selectedVideo.description}</p>
-            )}
-          </div>
-        </section>
-
-        {/* Grid of videos */}
-        <section>
-          <h3 className="text-lg font-medium text-slate-300 mb-4">Videos</h3>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {videos.map((video) => (
-              <li key={video.id}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedVideo(video)}
-                  className="w-full text-left rounded-lg overflow-hidden bg-slate-900/80 ring-1 ring-slate-800 hover:ring-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all group"
-                >
-                  <div className="relative aspect-video bg-slate-800">
-                    <Image
-                      src={video.thumbnail}
-                      alt=""
-                      fill
-                      className="object-cover group-hover:scale-[1.02] transition-transform"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                    <span className="absolute bottom-2 right-2 px-1.5 py-0.5 text-xs font-medium bg-black/80 rounded">
-                      {video.duration}
-                    </span>
-                  </div>
-                  <div className="p-3">
-                    <p className="font-medium text-slate-200 line-clamp-2 group-hover:text-white">
-                      {video.title}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {video.channel} · {video.views}
-                    </p>
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </main>
-    </div>
-  );
+export default async function Home() {
+  const videos = await getDisplayVideos();
+  return <VideoHomeClient videos={videos} />;
 }

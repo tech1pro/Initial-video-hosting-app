@@ -32,3 +32,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# synced YouTube cache (local / ephemeral on some hosts)
+/data/synced-videos.json
