@@ -60,7 +60,11 @@ async function handleSync(req: Request) {
   }
   if (channelIds.length === 0) {
     return NextResponse.json(
-      { ok: false, error: "YOUTUBE_CHANNEL_IDS is empty" },
+      {
+        ok: false,
+        error:
+          "YOUTUBE_CHANNEL_IDS is empty (add UC… ids and/or handles, e.g. hiphopimagination)",
+      },
       { status: 500 }
     );
   }

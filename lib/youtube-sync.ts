@@ -41,18 +41,49 @@ async function yt(
   return JSON.parse(text) as Record<string, unknown>;
 }
 
+/** Standard channel IDs look like UC + 22 chars. */
+const CHANNEL_ID_RE = /^UC[\w-]{22}$/;
+
 /**
- * Fetches latest uploads from each channel ID (UC...) and returns payload for storage.
+ * Resolves a UC… id or a @handle / handle string to a channel id.
+ */
+export async function resolveChannelRef(apiKey: string, raw: string): Promise<string> {
+  const s = raw.trim();
+  if (CHANNEL_ID_RE.test(s)) return s;
+
+  const handle = s.replace(/^@/, "");
+  const chJson = (await yt("channels", apiKey, {
+    part: "id",
+    forHandle: handle,
+  })) as { items?: Array<{ id?: string }> };
+
+  const id = chJson.items?.[0]?.id;
+  if (!id) {
+    throw new Error(
+      `Could not resolve YouTube channel "${raw}". Check the handle or use a UC… channel id.`
+    );
+  }
+  return id;
+}
+
+/**
+ * Fetches latest uploads from each channel (UC… id or handle like `hiphopimagination`).
  */
 export async function syncYouTubeChannels(
   apiKey: string,
-  channelIds: string[],
+  channelRefs: string[],
   maxPerChannel = 50
 ): Promise<SyncedVideoPayload> {
+  const resolvedIds = [
+    ...new Set(
+      await Promise.all(channelRefs.map((ref) => resolveChannelRef(apiKey, ref)))
+    ),
+  ];
+
   const channelsMeta: { id: string; title: string }[] = [];
   const allItems: { videoId: string; channelTitle: string }[] = [];
 
-  for (const channelId of channelIds) {
+  for (const channelId of resolvedIds) {
     const chJson = (await yt("channels", apiKey, {
       part: "contentDetails,snippet",
       id: channelId.trim(),
